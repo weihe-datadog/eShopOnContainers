@@ -1,5 +1,22 @@
 version: '3.4'
 
+x-common-env: &common-env
+  environment:
+    CORECLR_ENABLE_PROFILING: "1"
+    CORECLR_PROFILER: "{846F5F1C-F9AE-4B07-969E-05C26BC060D8}"
+    CORECLR_PROFILER_PATH: "/opt/datadog/Datadog.Trace.ClrProfiler.Native.so"
+    DD_DOTNET_TRACER_HOME: "/opt/datadog"
+    DD_TRACE_ENABLED: "true"
+    DD_TRACE_DEBUG: "true"
+    DD_AGENT_HOST: "host.docker.internal"
+    DD_DYNAMIC_INSTRUMENTATION_ENABLED: "true"
+    DD_GIT_COMMIT_SHA: "b6965936842cab32553543c1abe8a68714956f44"
+    DD_GIT_REPOSITORY_URL: "https://github.com/OmerRaviv/eShopOnContainers.git"
+
+x-common-build-args: &common-build-args
+  args:
+    DD_TRACER: "https://artprodcus3.artifacts.visualstudio.com/A124c910c-3307-4c7f-b5dc-36cb208d4211/a51c4863-3eb4-4c5d-878a-58b41a049e4e/_apis/artifact/cGlwZWxpbmVhcnRpZmFjdDovL2RhdGFkb2docS9wcm9qZWN0SWQvYTUxYzQ4NjMtM2ViNC00YzVkLTg3OGEtNThiNDFhMDQ5ZTRlL2J1aWxkSWQvMTU2MDgxL2FydGlmYWN0TmFtZS8yLjQ5LjAtcmVsZWFzZS1hcnRpZmFjdHM1/content?format=file&subPath=%2Fdatadog-dotnet-apm-2.49.0.tar.gz"
+
 services:
 
   seq:
@@ -22,61 +39,75 @@ services:
     build:
       context: .
       dockerfile: Services/Identity/Identity.API/Dockerfile
+      <<: *common-build-args
     depends_on:
       - sqldata
+    <<: *common-env
 
   basket-api:
     image: ${REGISTRY:-eshop}/basket.api:${PLATFORM:-linux}-${TAG:-latest}
     build:
       context: .
       dockerfile: Services/Basket/Basket.API/Dockerfile
+      <<: *common-build-args
     depends_on:
       - basketdata
       - identity-api
       - rabbitmq
+    <<: *common-env
 
   catalog-api:
     image: ${REGISTRY:-eshop}/catalog.api:${PLATFORM:-linux}-${TAG:-latest}
     build:
       context: .
       dockerfile: Services/Catalog/Catalog.API/Dockerfile
+      <<: *common-build-args
     depends_on:
       - sqldata
       - rabbitmq
+    <<: *common-env
 
   ordering-api:
     image: ${REGISTRY:-eshop}/ordering.api:${PLATFORM:-linux}-${TAG:-latest}
     build:
       context: .
       dockerfile: Services/Ordering/Ordering.API/Dockerfile
+      <<: *common-build-args
     depends_on:
       - sqldata
       - rabbitmq
+    <<: *common-env
 
   ordering-backgroundtasks:
     image: ${REGISTRY:-eshop}/ordering.backgroundtasks:${PLATFORM:-linux}-${TAG:-latest}
     build:
       context: .
       dockerfile: Services/Ordering/Ordering.BackgroundTasks/Dockerfile
+      <<: *common-build-args
     depends_on:
       - sqldata
       - rabbitmq
+    <<: *common-env
 
   payment-api:
     image: ${REGISTRY:-eshop}/payment.api:${PLATFORM:-linux}-${TAG:-latest}
     build:
       context: .
       dockerfile: Services/Payment/Payment.API/Dockerfile
+      <<: *common-build-args
     depends_on:
       - rabbitmq
+    <<: *common-env
 
   webhooks-api:
     image: ${REGISTRY:-eshop}/webhooks.api:${PLATFORM:-linux}-${TAG:-latest}
     build:
       context: .
       dockerfile: Services/Webhooks/Webhooks.API/Dockerfile
+      <<: *common-build-args
     depends_on:
       - sqldata
+    <<: *common-env
 
   mobileshoppingapigw:
     image: envoyproxy/envoy:v1.11.1
@@ -86,6 +117,7 @@ services:
     build:
       context: .
       dockerfile: ApiGateways/Mobile.Bff.Shopping/aggregator/Dockerfile
+      <<: *common-build-args
     depends_on:
       - nosqldata
       - sqldata
@@ -94,12 +126,14 @@ services:
       - ordering-api
       - catalog-api
       - basket-api
+    <<: *common-env
 
   webshoppingagg:
     image: ${REGISTRY:-eshop}/webshoppingagg:${PLATFORM:-linux}-${TAG:-latest}
     build:
       context: .
       dockerfile: ApiGateways/Web.Bff.Shopping/aggregator/Dockerfile
+      <<: *common-build-args
     depends_on:
       - nosqldata
       - sqldata
@@ -108,12 +142,14 @@ services:
       - ordering-api
       - catalog-api
       - basket-api
+    <<: *common-env
 
   ordering-signalrhub:
     image: ${REGISTRY:-eshop}/ordering.signalrhub:${PLATFORM:-linux}-${TAG:-latest}
     build:
       context: .
       dockerfile: Services/Ordering/Ordering.SignalrHub/Dockerfile
+      <<: *common-build-args
     depends_on:
       - nosqldata
       - sqldata
@@ -122,6 +158,7 @@ services:
       - ordering-api
       - catalog-api
       - basket-api
+    <<: *common-env
 
   webstatus:
     image: ${REGISTRY:-eshop}/webstatus:${PLATFORM:-linux}-${TAG:-latest}
@@ -145,17 +182,21 @@ services:
     build:
       context: .
       dockerfile: Web/WebMVC/Dockerfile
+      <<: *common-build-args
     depends_on:
       - webshoppingagg
       - webshoppingapigw
+    <<: *common-env
 
   webhooks-client:
     image: ${REGISTRY:-eshop}/webhooks.client:${PLATFORM:-linux}-${TAG:-latest}
     build:
       context: .
       dockerfile: Web/WebhookClient/Dockerfile
+      <<: *common-build-args
     depends_on:
       - webhooks-api
+    <<: *common-env
 
   webshoppingapigw:
     image: envoyproxy/envoy:v1.11.1

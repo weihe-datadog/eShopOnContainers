@@ -2,6 +2,12 @@ FROM mcr.microsoft.com/dotnet/aspnet:7.0 AS base
 WORKDIR /app
 EXPOSE 80
 
+ARG DD_TRACER
+RUN apt-get update && apt-get install -y curl
+RUN mkdir -p /var/log/datadog/dotnet
+RUN mkdir -p /opt/datadog
+RUN curl -L $DD_TRACER | tar xzf - -C /opt/datadog
+
 FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
 WORKDIR /src
 
