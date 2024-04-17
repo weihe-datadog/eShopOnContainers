@@ -183,6 +183,7 @@ services:
       context: .
       dockerfile: Web/WebMVC/Dockerfile
       <<: *common-build-args
+    platform: linux/arm64
     depends_on:
       - webshoppingagg
       - webshoppingapigw
