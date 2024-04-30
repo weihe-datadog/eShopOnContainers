@@ -1,6 +1,23 @@
 namespace Microsoft.eShopOnContainers.WebMVC.Controllers;
 
 using Microsoft.eShopOnContainers.WebMVC.ViewModels;
+using Newtonsoft.Json;
+
+class ApplyCouponRequest {
+    [JsonProperty("coupon_code")]
+    public string CouponCode { get; set; }
+    [JsonProperty("items")]
+    public Item[] items { get; set; }
+}
+
+class Item {
+    [JsonProperty("id")]
+    public string ProductId { get; set; }
+    [JsonProperty("name")]
+    public string ProductName { get; set; }
+    [JsonProperty("price")]
+    public float Price { get; set; }
+}
 
 [Authorize]
 public class OrderController : Controller
@@ -47,7 +64,73 @@ public class OrderController : Controller
             ModelState.AddModelError("Error", $"It was not possible to create a new order, please try later on ({ex.GetType().Name} - {ex.Message})");
         }
 
+        
         return View("Create", model);
+    }
+
+    [HttpPost]
+    public IActionResult ApplyCoupon(string couponCode, string orderModelJson)
+    {
+        var orderModel = Newtonsoft.Json.JsonConvert.DeserializeObject<Order>(orderModelJson);
+        // // Assume you have a service to get and update the order
+        // var order = _orderService.GetOrder();
+
+        // // Apply a 10% discount to each item in the order
+        // foreach (var item in order.Items)
+        // {
+        //     item.Price *= 0.9m;
+        // }
+
+        // // Update the order with the discounted prices
+        // _orderService.UpdateOrder(order);
+
+        // // Re-render the current page with the updated order
+        // return View(order);
+
+        // Console.WriteLine("coupon code is" + couponCode);
+        // Console.WriteLine("model.OrderItems.Count is " + orderModel.OrderItems.Count);
+        // if (orderModel.OrderItems.Count > 0)
+        // {
+        //     orderModel.OrderItems = orderModel.OrderItems.Take(1).ToList();
+        //     Console.WriteLine("Truncate the list to only 1");
+        //     Console.WriteLine("model.OrderItems.Count is " + orderModel.OrderItems.Count + " after truncating");
+        // }
+        // var serializedJson = Newtonsoft.Json.JsonConvert.SerializeObject(orderModel);
+        // Console.WriteLine("Update json: " + serializedJson);
+
+        var request = new ApplyCouponRequest {
+            CouponCode = couponCode,
+            items = orderModel.OrderItems.Select(item => new Item {
+                ProductId = item.ProductId.ToString(),
+                ProductName = item.ProductName,
+                Price = (float)item.UnitPrice
+            }).ToArray()
+        };
+
+        var serializedJson = Newtonsoft.Json.JsonConvert.SerializeObject(request);
+
+        Console.WriteLine("Send request: " + serializedJson);
+        var client = new HttpClient();
+        //var content = new StringContent(serializedJson, Encoding.UTF8, "application/json");
+
+        var webRequest = new HttpRequestMessage(HttpMethod.Post, "http://coupon-api:5000/apply-coupon")
+        {
+            Content = new StringContent(serializedJson, Encoding.UTF8, "application/json")
+        };
+        var response = client.Send(webRequest);
+        Console.WriteLine("Status code is: " + response.StatusCode);
+        using (var reader = new StreamReader(response.Content.ReadAsStream()))
+        {
+
+            Console.WriteLine("Body is: " + reader.ReadToEnd());
+        }
+        // if (request.items.Length > 0)
+        // {
+        //     request.items = request.items.Take(1).ToArray();
+        // }
+        // Console.WriteLine("Truncate the list to only 1");
+        // Console.WriteLine("model.OrderItems.Count is " + request.items.Length + " after truncating");
+        return View("Create", orderModel);
     }
 
     public async Task<IActionResult> Cancel(string orderId)

@@ -8,15 +8,18 @@ x-common-env: &common-env
     DD_DOTNET_TRACER_HOME: "/opt/datadog"
     DD_TRACE_ENABLED: "true"
     DD_TRACE_DEBUG: "true"
-    DD_AGENT_HOST: "host.docker.internal"
+    DD_AGENT_HOST: "docker.for.mac.localhost"
     DD_DYNAMIC_INSTRUMENTATION_ENABLED: "true"
+    DD_EXCEPTION_DEBUGGING_ENABLED: "true"
+    DD_LOGS_INJECTION: "true"
     DD_GIT_COMMIT_SHA: "b6965936842cab32553543c1abe8a68714956f44"
     DD_GIT_REPOSITORY_URL: "https://github.com/OmerRaviv/eShopOnContainers.git"
+    COUPON_DATABASE_URL: postgresql://coupon_manager:admin@coupondb:5432/coupon_management
 
 x-common-build-args: &common-build-args
   args:
-    DD_TRACER: "https://artprodcus3.artifacts.visualstudio.com/A124c910c-3307-4c7f-b5dc-36cb208d4211/a51c4863-3eb4-4c5d-878a-58b41a049e4e/_apis/artifact/cGlwZWxpbmVhcnRpZmFjdDovL2RhdGFkb2docS9wcm9qZWN0SWQvYTUxYzQ4NjMtM2ViNC00YzVkLTg3OGEtNThiNDFhMDQ5ZTRlL2J1aWxkSWQvMTU2MDgxL2FydGlmYWN0TmFtZS8yLjQ5LjAtcmVsZWFzZS1hcnRpZmFjdHM1/content?format=file&subPath=%2Fdatadog-dotnet-apm-2.49.0.tar.gz"
-
+    DD_TRACER: "https://artprodcus3.artifacts.visualstudio.com/A124c910c-3307-4c7f-b5dc-36cb208d4211/a51c4863-3eb4-4c5d-878a-58b41a049e4e/_apis/artifact/cGlwZWxpbmVhcnRpZmFjdDovL2RhdGFkb2docS9wcm9qZWN0SWQvYTUxYzQ4NjMtM2ViNC00YzVkLTg3OGEtNThiNDFhMDQ5ZTRlL2J1aWxkSWQvMTU2MDgxL2FydGlmYWN0TmFtZS8yLjQ5LjAtcmVsZWFzZS1hcnRpZmFjdHM1/content?format=file&subPath=%2Fdatadog-dotnet-apm-2.49.0.arm64.tar.gz"
+    DD_TRACER_PY: "git+https://github.com/DataDog/dd-trace-py.git@chore/span-origin"
 services:
 
   seq:
@@ -183,9 +186,11 @@ services:
       context: .
       dockerfile: Web/WebMVC/Dockerfile
       <<: *common-build-args
+    platform: linux/arm64
     depends_on:
       - webshoppingagg
       - webshoppingapigw
+      - coupon-api
     <<: *common-env
 
   webhooks-client:
@@ -198,5 +203,34 @@ services:
       - webhooks-api
     <<: *common-env
 
+  coupondb:
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: coupon_management
+      POSTGRES_USER: coupon_manager
+      POSTGRES_PASSWORD: admin
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./Web/Coupon/init_db.sql:/docker-entrypoint-initdb.d/init_db.sql
   webshoppingapigw:
     image: envoyproxy/envoy:v1.11.1
+
+  coupon-api:
+    image: ${REGISTRY:-eshop}/coupon.api:${PLATFORM:-linux}-${TAG:-latest}
+    build:
+      context: Web/Coupon
+      dockerfile: ./Dockerfile
+      <<: *common-build-args
+    command: ddtrace-run python3 app.py
+    volumes:
+      - .:/code
+    ports:
+      - "5000:5000"
+    depends_on:
+      - coupondb
+    <<: *common-env
+
+volumes:
+  pgdata:

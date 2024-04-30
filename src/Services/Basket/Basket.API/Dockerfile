@@ -50,11 +50,11 @@ COPY "docker-compose.dcproj" "docker-compose.dcproj"
 
 COPY "NuGet.config" "NuGet.config"
 
-RUN dotnet restore "eShopOnContainers-ServicesAndWebApps.sln"
+RUN dotnet restore "eShopOnContainers-ServicesAndWebApps.sln" -a arm64
 
 COPY . .
 WORKDIR /src/Services/Basket/Basket.API
-RUN dotnet publish --no-restore -c Release -o /app
+RUN dotnet publish --no-restore -a arm64 -c Release -o /app
 
 FROM build as unittest
 WORKDIR /src/Services/Basket/Basket.UnitTests
