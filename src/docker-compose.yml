@@ -21,7 +21,7 @@ x-common-env: &common-env
 x-common-build-args: &common-build-args
   args:
     DD_TRACER: "https://artprodcus3.artifacts.visualstudio.com/A124c910c-3307-4c7f-b5dc-36cb208d4211/a51c4863-3eb4-4c5d-878a-58b41a049e4e/_apis/artifact/cGlwZWxpbmVhcnRpZmFjdDovL2RhdGFkb2docS9wcm9qZWN0SWQvYTUxYzQ4NjMtM2ViNC00YzVkLTg3OGEtNThiNDFhMDQ5ZTRlL2J1aWxkSWQvMTU2MDgxL2FydGlmYWN0TmFtZS8yLjQ5LjAtcmVsZWFzZS1hcnRpZmFjdHM1/content?format=file&subPath=%2Fdatadog-dotnet-apm-2.49.0.arm64.tar.gz"
-    DD_TRACER_PY: "git+https://github.com/DataDog/dd-trace-py.git@7cc6b38b1c080d1f82e7a8dc4e6d868ce713e728"
+    DD_TRACER_PY: "git+https://github.com/P403n1x87/dd-trace-py.git@chore/span-origin"
 services:
 
   seq:
