@@ -192,7 +192,7 @@ services:
     depends_on:
       - webshoppingagg
       - webshoppingapigw
-      - coupon-api
+      - coupon-django-api
     <<: *common-env
 
   webhooks-client:
@@ -230,6 +230,23 @@ services:
       - .:/code
     ports:
       - "5000:5000"
+    depends_on:
+      - coupondb
+    <<: *common-env
+  
+  coupon-django-api:
+    image: ${REGISTRY:-eshop}/coupon-django.api:${PLATFORM:-linux}-${TAG:-latest}
+    expose: 
+      - "8000"
+    build:
+      context: Web/Coupon_Django_Site
+      dockerfile: ./Dockerfile
+      <<: *common-build-args
+    command: ddtrace-run python3 manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/code
+    ports:
+      - "8000:8000"
     depends_on:
       - coupondb
     <<: *common-env
