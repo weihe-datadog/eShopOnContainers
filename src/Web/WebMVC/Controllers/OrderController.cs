@@ -11,19 +11,23 @@ class ApplyCouponRequest {
 }
 
 class ApplyCouponResponse {
-    [JsonProperty("adjusted_item_prices")]
-    public AdjustedItemPrices[] items { get; set; }
+    [JsonProperty("adjusted_items")]
+    public AdjustedItem[] items { get; set; }
     [JsonProperty("final_price")]
     public float FinalPrice { get; set; }
 }
 
-class AdjustedItemPrices {
+class AdjustedItem {
     [JsonProperty("id")]
     public string ProductId { get; set; }
-    [JsonProperty("original_price")]
+    [JsonProperty("original_unit_price")]
     public float OriginalPrice { get; set; }
-    [JsonProperty("adjusted_price")]
+    [JsonProperty("adjusted_unit_price")]
     public float AdjustedPrice { get; set; }
+    [JsonProperty("original_units")]
+    public int OriginalUnits { get; set; }
+    [JsonProperty("adjusted_units")]
+    public int AdjustedUnits { get; set; }
     [JsonProperty("name")]
     public string Name { get; set; }
 }
@@ -33,8 +37,10 @@ class Item {
     public string ProductId { get; set; }
     [JsonProperty("name")]
     public string ProductName { get; set; }
-    [JsonProperty("price")]
-    public float Price { get; set; }
+    [JsonProperty("unit_price")]
+    public float UnitPrice { get; set; }
+    [JsonProperty("units")]
+    public int Units { get; set; }
 }
 
 [Authorize]
@@ -89,47 +95,21 @@ public class OrderController : Controller
     [HttpPost]
     public IActionResult ApplyCoupon(string couponCode, string orderModelJson)
     {
-        var orderModel = Newtonsoft.Json.JsonConvert.DeserializeObject<Order>(orderModelJson);
-        // // Assume you have a service to get and update the order
-        // var order = _orderService.GetOrder();
-
-        // // Apply a 10% discount to each item in the order
-        // foreach (var item in order.Items)
-        // {
-        //     item.Price *= 0.9m;
-        // }
-
-        // // Update the order with the discounted prices
-        // _orderService.UpdateOrder(order);
-
-        // // Re-render the current page with the updated order
-        // return View(order);
-
-        // Console.WriteLine("coupon code is" + couponCode);
-        // Console.WriteLine("model.OrderItems.Count is " + orderModel.OrderItems.Count);
-        // if (orderModel.OrderItems.Count > 0)
-        // {
-        //     orderModel.OrderItems = orderModel.OrderItems.Take(1).ToList();
-        //     Console.WriteLine("Truncate the list to only 1");
-        //     Console.WriteLine("model.OrderItems.Count is " + orderModel.OrderItems.Count + " after truncating");
-        // }
-        // var serializedJson = Newtonsoft.Json.JsonConvert.SerializeObject(orderModel);
-        // Console.WriteLine("Update json: " + serializedJson);
+        var orderModel = JsonConvert.DeserializeObject<Order>(orderModelJson);
 
         var request = new ApplyCouponRequest {
             CouponCode = couponCode,
             items = orderModel.OrderItems.Select(item => new Item {
                 ProductId = item.ProductId.ToString(),
                 ProductName = item.ProductName,
-                Price = (float)item.UnitPrice
+                UnitPrice = (float)item.UnitPrice,
+                Units = item.Units
             }).ToArray()
         };
 
-        var serializedJson = Newtonsoft.Json.JsonConvert.SerializeObject(request);
+        var serializedJson = JsonConvert.SerializeObject(request);
 
-        Console.WriteLine("Send request: " + serializedJson);
         var client = new HttpClient();
-        //var content = new StringContent(serializedJson, Encoding.UTF8, "application/json");
 
         var webRequest = new HttpRequestMessage(HttpMethod.Post, "http://coupon-api:5000/apply-coupon")
         {
@@ -137,32 +117,25 @@ public class OrderController : Controller
         };
         var response = client.Send(webRequest);
         Console.WriteLine("Status code is: " + response.StatusCode);
-        // using (var reader = new StreamReader(response.Content.ReadAsStream()))
-        // {
-
-        //     Console.WriteLine("Body is: " + reader.ReadToEnd());
-        // }
-        // if (orderModel.OrderItems.Count > 0)
-        // {
-        //     orderModel.OrderItems = orderModel.OrderItems.Take(1).ToList();
-        // }
-        // Console.WriteLine("Truncate the list to only 1");
-        // Console.WriteLine("model.OrderItems.Count is " + orderModel.OrderItems.Count + " after truncating");
         
         if (response.StatusCode == System.Net.HttpStatusCode.OK) {
             var responseBody = response.Content.ReadAsStringAsync().Result;
-            Console.WriteLine("Body is: " + responseBody);
-            var result = Newtonsoft.Json.JsonConvert.DeserializeObject<ApplyCouponResponse>(responseBody);
-            // foreach (var item in result.items)
-            // {
-            //     var orderItem = orderModel.OrderItems.FirstOrDefault(i => i.ProductId.ToString() == item.ProductId);
-            //     if (orderItem != null)
-            //     {
-            //         // orderItem.UnitPrice = item.AdjustedPrice;
-            //         orderItem.UnitPrice = (decimal)item.AdjustedPrice;
-            //     }
-            // }
+            Console.WriteLine("Response body is: " + responseBody);
+            var result = JsonConvert.DeserializeObject<ApplyCouponResponse>(responseBody);
+            
+            var idToPictures = new Dictionary<string, string>();
+            foreach (var item in orderModel.OrderItems) {
+                idToPictures[item.ProductId.ToString()] = item.PictureUrl;
+            }
             orderModel.Total = (decimal)result.FinalPrice;
+            orderModel.OrderItems = result.items.Select(item => new OrderItem {
+                ProductId = int.Parse(item.ProductId),
+                ProductName = item.Name,
+                UnitPrice = (decimal)item.AdjustedPrice,
+                Units = item.AdjustedUnits,
+                Discount = (decimal)(item.OriginalPrice * item.OriginalUnits - item.AdjustedPrice * item.AdjustedUnits),
+                PictureUrl = idToPictures[item.ProductId],
+            }).ToList();
         }
         return PartialView("_OrderItems", orderModel);
     }

@@ -43,9 +43,12 @@ def apply_coupon():
 
     # Validate items data
     for item in items:
-        if 'price' not in item or not isinstance(item['price'], (int, float)):
+        if 'unit_price' not in item or not isinstance(item['unit_price'], (int, float)):
             print("Error: Item price missing or invalid.")
             abort(400, description="Item price missing or invalid.")
+        if 'units' not in item or not isinstance(item['units'], int):
+            print("Error: Item units missing or invalid.")
+            abort(400, description="Item units missing or invalid.")
 
     # Connect to the database
     conn = get_db_connection()
@@ -69,27 +72,33 @@ def apply_coupon():
 
     # Apply coupon discount to each item
     adjusted_item_prices = []
-    total_discount = 0
+    total_discounted_price = 0
+    
     for item in items:
-        item_price = float(item['price'])
+        item_price = float(item['unit_price'])
+        item_units = item['units']
+
         if discount_type == 'percentage':
             discount = item_price * (float(discount_value) / 100)
         else:  # discount_type == 'fixed'
             discount = float(discount_value)
 
+        adjusted_units = item_units
         adjusted_price = max(item_price - discount, 0)  # Ensure price doesn't go below 0
-        total_discount += discount
         adjusted_item_prices.append({
             'id': item['id'],
             'name': item['name'],
-            'original_price': item_price,
-            'adjusted_price': adjusted_price
+            'original_unit_price': item_price,
+            'adjusted_unit_price': adjusted_price,
+            'original_units': item_units,
+            'adjusted_units': adjusted_units
         })
-        print(f"Adjusted item prices: {adjusted_item_prices}")
+
+        total_discounted_price += adjusted_price * adjusted_units
+    print(f"Adjusted item prices: {adjusted_item_prices}")
 
     # Calculate final price
-    final_price = sum(item['price'] for item in items) - total_discount
-    print(f"Final price: {final_price}")
+    print(f"Final price: {total_discounted_price}")
 
     # Close database connection
     cursor.close()
@@ -98,8 +107,8 @@ def apply_coupon():
 
     # Response with adjusted item prices and final price
     response = {
-        'final_price': final_price,
-        'adjusted_item_prices': adjusted_item_prices
+        'final_price': total_discounted_price,
+        'adjusted_items': adjusted_item_prices
     }
     print(f"Response: {response}")
 
