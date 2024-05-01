@@ -10,6 +10,24 @@ class ApplyCouponRequest {
     public Item[] items { get; set; }
 }
 
+class ApplyCouponResponse {
+    [JsonProperty("adjusted_item_prices")]
+    public AdjustedItemPrices[] items { get; set; }
+    [JsonProperty("final_price")]
+    public float FinalPrice { get; set; }
+}
+
+class AdjustedItemPrices {
+    [JsonProperty("id")]
+    public string ProductId { get; set; }
+    [JsonProperty("original_price")]
+    public float OriginalPrice { get; set; }
+    [JsonProperty("adjusted_price")]
+    public float AdjustedPrice { get; set; }
+    [JsonProperty("name")]
+    public string Name { get; set; }
+}
+
 class Item {
     [JsonProperty("id")]
     public string ProductId { get; set; }
@@ -119,18 +137,34 @@ public class OrderController : Controller
         };
         var response = client.Send(webRequest);
         Console.WriteLine("Status code is: " + response.StatusCode);
-        using (var reader = new StreamReader(response.Content.ReadAsStream()))
-        {
-
-            Console.WriteLine("Body is: " + reader.ReadToEnd());
-        }
-        // if (request.items.Length > 0)
+        // using (var reader = new StreamReader(response.Content.ReadAsStream()))
         // {
-        //     request.items = request.items.Take(1).ToArray();
+
+        //     Console.WriteLine("Body is: " + reader.ReadToEnd());
+        // }
+        // if (orderModel.OrderItems.Count > 0)
+        // {
+        //     orderModel.OrderItems = orderModel.OrderItems.Take(1).ToList();
         // }
         // Console.WriteLine("Truncate the list to only 1");
-        // Console.WriteLine("model.OrderItems.Count is " + request.items.Length + " after truncating");
-        return View("Create", orderModel);
+        // Console.WriteLine("model.OrderItems.Count is " + orderModel.OrderItems.Count + " after truncating");
+        
+        if (response.StatusCode == System.Net.HttpStatusCode.OK) {
+            var responseBody = response.Content.ReadAsStringAsync().Result;
+            Console.WriteLine("Body is: " + responseBody);
+            var result = Newtonsoft.Json.JsonConvert.DeserializeObject<ApplyCouponResponse>(responseBody);
+            // foreach (var item in result.items)
+            // {
+            //     var orderItem = orderModel.OrderItems.FirstOrDefault(i => i.ProductId.ToString() == item.ProductId);
+            //     if (orderItem != null)
+            //     {
+            //         // orderItem.UnitPrice = item.AdjustedPrice;
+            //         orderItem.UnitPrice = (decimal)item.AdjustedPrice;
+            //     }
+            // }
+            orderModel.Total = (decimal)result.FinalPrice;
+        }
+        return PartialView("_OrderItems", orderModel);
     }
 
     public async Task<IActionResult> Cancel(string orderId)

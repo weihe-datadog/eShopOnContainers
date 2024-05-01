@@ -87,11 +87,13 @@
                 </div>
             </div>
         </section>
-
-        @await Html.PartialAsync("_OrderItems")
+        
+        <div id="order-items">
+            @await Html.PartialAsync("_OrderItems")
+        </div>
 
         <input type="text" id="couponCode" placeholder="Enter your coupon code" />
-        <button type="button" id="applyCoupon" class="btn btn-primary" onclick="ModifyPrice()">Apply</button>
+        <button type="button" id="applyCoupon" class="btn btn-primary">Apply</button>
         <section class="esh-orders_new-section">
             <div class="form-group row">
                 <div class="col-md-9">
@@ -113,13 +115,15 @@
         $(document).ready(function() {
             $('#applyCoupon').click(function () {
                 const couponCode = $('#couponCode').val();
-
+                @* $.get() *@
                 $.ajax({
                     url: '@Url.Action("ApplyCoupon","Order")',
                     type: 'POST',
                     data: { couponCode: couponCode, orderModelJson: '@Html.Raw(serializedModel)' }
                 }).done(function(result) {
                     // update your frontend
+                    console.log("results:\n" + result);
+                    $('#order-items').html(result);
                 });
             });
         });
