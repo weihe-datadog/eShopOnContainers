@@ -14,7 +14,7 @@ x-common-env: &common-env
     DD_LOGS_INJECTION: "true"
     DD_TRACE_SPAN_ORIGIN_ENABLED: "true"
     DD_TRACE_SPAN_ORIGIN_ENRICHED: "true"
-    DD_GIT_COMMIT_SHA: "dc08bf25bc80829f3a38310626fc7e0069de9f32"
+    DD_GIT_COMMIT_SHA: "101ae59b951dc427374211b74a50d4133d411837"
     DD_GIT_REPOSITORY_URL: "https://github.com/weihe-datadog/eShopOnContainers.git"
     COUPON_DATABASE_URL: postgresql://coupon_manager:admin@coupondb:5432/coupon_management
 
@@ -192,7 +192,7 @@ services:
     depends_on:
       - webshoppingagg
       - webshoppingapigw
-      - coupon-django-api
+      - coupon-api
     <<: *common-env
 
   webhooks-client:
