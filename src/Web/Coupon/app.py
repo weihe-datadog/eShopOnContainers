@@ -41,14 +41,14 @@ def apply_coupon():
         print("Error: Missing coupon code or items.")
         abort(400, description="Missing coupon code or items.")
 
-    # Validate items data
-    for item in items:
-        if 'unit_price' not in item or not isinstance(item['unit_price'], (int, float)):
-            print("Error: Item price missing or invalid.")
-            abort(400, description="Item price missing or invalid.")
-        if 'units' not in item or not isinstance(item['units'], int):
-            print("Error: Item units missing or invalid.")
-            abort(400, description="Item units missing or invalid.")
+    # # Validate items data
+    # for item in items:
+    #     if 'unit_price' not in item or not isinstance(item['unit_price'], (int, float)):
+    #         print("Error: Item price missing or invalid.")
+    #         abort(400, description="Item price missing or invalid.")
+    #     if 'units' not in item or not isinstance(item['units'], int):
+    #         print("Error: Item units missing or invalid.")
+    #         abort(400, description="Item units missing or invalid.")
 
     # Connect to the database
     conn = get_db_connection()

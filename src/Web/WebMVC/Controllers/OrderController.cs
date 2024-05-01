@@ -37,7 +37,7 @@ class Item {
     public string ProductId { get; set; }
     [JsonProperty("name")]
     public string ProductName { get; set; }
-    [JsonProperty("unit_price")]
+    [JsonProperty("price")]
     public float UnitPrice { get; set; }
     [JsonProperty("units")]
     public int Units { get; set; }
@@ -139,7 +139,7 @@ public class OrderController : Controller
         }
         return PartialView("_OrderItems", orderModel);
     }
-
+    
     public async Task<IActionResult> Cancel(string orderId)
     {
         await _orderSvc.CancelOrder(orderId);
