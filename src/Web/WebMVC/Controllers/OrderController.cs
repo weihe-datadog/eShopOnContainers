@@ -1,4 +1,4 @@
-namespace Microsoft.eShopOnContainers.WebMVC.Controllers;
+namespace eShop;
 
 using Microsoft.eShopOnContainers.WebMVC.ViewModels;
 using Newtonsoft.Json;
@@ -7,12 +7,12 @@ class ApplyCouponRequest {
     [JsonProperty("coupon_code")]
     public string CouponCode { get; set; }
     [JsonProperty("items")]
-    public Item[] items { get; set; }
+    public Item[] Items { get; set; }
 }
 
 class ApplyCouponResponse {
     [JsonProperty("adjusted_items")]
-    public AdjustedItem[] items { get; set; }
+    public AdjustedItem[] Items { get; set; }
     [JsonProperty("final_price")]
     public float FinalPrice { get; set; }
 }
@@ -37,7 +37,7 @@ class Item {
     public string ProductId { get; set; }
     [JsonProperty("name")]
     public string ProductName { get; set; }
-    [JsonProperty("price")]
+    [JsonProperty("unit_price")]
     public float UnitPrice { get; set; }
     [JsonProperty("units")]
     public int Units { get; set; }
@@ -49,6 +49,7 @@ public class OrderController : Controller
     private IOrderingService _orderSvc;
     private IBasketService _basketSvc;
     private readonly IIdentityParser<ApplicationUser> _appUserParser;
+    private readonly HttpClient _httpClient = new HttpClient();
     public OrderController(IOrderingService orderSvc, IBasketService basketSvc, IIdentityParser<ApplicationUser> appUserParser)
     {
         _appUserParser = appUserParser;
@@ -93,13 +94,24 @@ public class OrderController : Controller
     }
 
     [HttpPost]
-    public IActionResult ApplyCoupon(string couponCode, string orderModelJson)
+    public async Task<IActionResult> ApplyCouponAsync(string couponCode, string orderModelJson)
     {
-        var orderModel = JsonConvert.DeserializeObject<Order>(orderModelJson);
+        if (string.IsNullOrWhiteSpace(orderModelJson))
+        {
+            return BadRequest("Invalid order model data.");
+        }
 
-        var request = new ApplyCouponRequest {
+        var orderModel = JsonConvert.DeserializeObject<Order>(orderModelJson);
+        if (orderModel == null)
+        {
+            return BadRequest("Order deserialization failed.");
+        }
+
+        var request = new ApplyCouponRequest
+        {
             CouponCode = couponCode,
-            items = orderModel.OrderItems.Select(item => new Item {
+            Items = orderModel.OrderItems.Select(item => new Item
+            {
                 ProductId = item.ProductId.ToString(),
                 ProductName = item.ProductName,
                 UnitPrice = (float)item.UnitPrice,
@@ -108,37 +120,41 @@ public class OrderController : Controller
         };
 
         var serializedJson = JsonConvert.SerializeObject(request);
+        var content = new StringContent(serializedJson, Encoding.UTF8, "application/json");
 
-        var client = new HttpClient();
-
-        var webRequest = new HttpRequestMessage(HttpMethod.Post, "http://coupon-api:5000/apply-coupon")
+        try
         {
-            Content = new StringContent(serializedJson, Encoding.UTF8, "application/json")
-        };
-        var response = client.Send(webRequest);
-        Console.WriteLine("Status code is: " + response.StatusCode);
-        
-        if (response.StatusCode == System.Net.HttpStatusCode.OK) {
-            var responseBody = response.Content.ReadAsStringAsync().Result;
-            Console.WriteLine("Response body is: " + responseBody);
-            var result = JsonConvert.DeserializeObject<ApplyCouponResponse>(responseBody);
-            
-            var idToPictures = new Dictionary<string, string>();
-            foreach (var item in orderModel.OrderItems) {
-                idToPictures[item.ProductId.ToString()] = item.PictureUrl;
+            using var response = await _httpClient.PostAsync("http://coupon-api:5000/apply-coupon", content);
+            if (response.IsSuccessStatusCode)
+            {
+                var responseBody = await response.Content.ReadAsStringAsync();
+                var result = JsonConvert.DeserializeObject<ApplyCouponResponse>(responseBody);
+
+                var idToPictures = orderModel.OrderItems.ToDictionary(item => item.ProductId.ToString(), item => item.PictureUrl);
+
+                orderModel.Total = (decimal)result.FinalPrice;
+                orderModel.OrderItems = result.Items.Select(item => new OrderItem
+                {
+                    ProductId = int.Parse(item.ProductId),
+                    ProductName = item.Name,
+                    UnitPrice = (decimal)item.AdjustedPrice,
+                    Units = item.AdjustedUnits,
+                    Discount = (decimal)(item.OriginalPrice * item.OriginalUnits - item.AdjustedPrice * item.AdjustedUnits),
+                    PictureUrl = idToPictures[item.ProductId],
+                }).ToList();
+
+                return PartialView("_OrderItems", orderModel);
             }
-            orderModel.Total = (decimal)result.FinalPrice;
-            orderModel.OrderItems = result.items.Select(item => new OrderItem {
-                ProductId = int.Parse(item.ProductId),
-                ProductName = item.Name,
-                UnitPrice = (decimal)item.AdjustedPrice,
-                Units = item.AdjustedUnits,
-                Discount = (decimal)(item.OriginalPrice * item.OriginalUnits - item.AdjustedPrice * item.AdjustedUnits),
-                PictureUrl = idToPictures[item.ProductId],
-            }).ToList();
+            else {
+                return StatusCode((int)response.StatusCode, await response.Content.ReadAsStringAsync());
+            }
         }
-        return PartialView("_OrderItems", orderModel);
+        catch (Exception)
+        {
+            return StatusCode(500, "Internal server error");
+        }
     }
+
     
     public async Task<IActionResult> Cancel(string orderId)
     {
