@@ -93,9 +93,30 @@ public class OrderController : Controller
         return View("Create", model);
     }
 
+    private void dosomething(List<int> numbers) {
+        foreach (var number in numbers)
+        {
+            if (number == 3)
+            {
+                numbers.Add(6);  // Modify the list while iterating
+            }
+            if (number == 4)
+            {
+                numbers.Remove(4);  // Modify the list while iterating
+            }
+            if (number == 5)
+            {
+                numbers.Add(7);  // Modify the list while iterating
+            }
+        }
+        Console.WriteLine(numbers.Count);
+    }
+
     [HttpPost]
     public async Task<IActionResult> ApplyCouponAsync(string couponCode, string orderModelJson)
     {
+        dosomething(new List<int>() { 1, 2, 3, 4, 5 });
+
         if (string.IsNullOrWhiteSpace(orderModelJson))
         {
             return BadRequest("Invalid order model data.");
@@ -124,19 +145,6 @@ public class OrderController : Controller
 
         try
         {
-            List<int> numbers = new List<int>() { 1, 2, 3, 4, 5 };
-            foreach (var number in numbers)
-            {
-                if (number == 3)
-                {
-                    numbers.Add(6);  // Modify the list while iterating
-                }
-                if (number == 4)
-                {
-                    numbers.Remove(4);  // Modify the list while iterating
-                }
-            }
-            Console.WriteLine(numbers.Count);
 
             using var response = await _httpClient.PostAsync("http://coupon-django-api:8000/coupons/apply", content);
             if (response.IsSuccessStatusCode)
