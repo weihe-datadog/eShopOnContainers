@@ -122,14 +122,15 @@ public class OrderController : Controller
         var serializedJson = JsonConvert.SerializeObject(request);
         var content = new StringContent(serializedJson, Encoding.UTF8, "application/json");
 
-        var a = 0;
-        var b = 1;
-        if (2 * 2 < 10) {
-            b = 0;
+        List<int> numbers = new List<int>() { 1, 2, 3, 4, 5 };
+        foreach (var number in numbers)
+        {
+            if (number == 3)
+            {
+                numbers.Add(6);  // Modify the list while iterating
+            }
         }
-        var c = a/b;
-        Console.WriteLine(c);
-
+        Console.WriteLine(numbers.Count);  // Output: 6
         try
         {
             using var response = await _httpClient.PostAsync("http://coupon-django-api:8000/coupons/apply", content);
