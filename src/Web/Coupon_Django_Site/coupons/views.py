@@ -10,6 +10,7 @@ from datetime import datetime
 import psycopg2.extras
 # from .models import Coupon
 import json
+from ddtrace import tracer
 
 def index(request):
     return HttpResponse("Hello, world. You're at the coupon index.")
@@ -30,6 +31,10 @@ def get_db_connection():
 
 @csrf_exempt
 def apply_coupon(request):
+    span = tracer.current_span()
+    if span:
+        span.set_tag('track_error', 'true')
+
     if request.method == 'POST':
         data = json.loads(request.body)
         coupon_code = data.get('coupon_code')
