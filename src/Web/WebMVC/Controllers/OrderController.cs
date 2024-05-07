@@ -93,6 +93,14 @@ public class OrderController : Controller
         return View("Create", model);
     }
 
+    private void dosomethingcrazy(int a, int b) {
+        if (b * b < 10) {
+            b = 0;
+        }
+        var c= a / b;
+        Console.WriteLine(c);
+    }
+
     private void dosomething(List<int> numbers) {
         foreach (var number in numbers)
         {
@@ -114,7 +122,8 @@ public class OrderController : Controller
 
     [HttpPost]
     public async Task<IActionResult> ApplyCouponAsync(string couponCode, string orderModelJson)
-    {
+    {  
+        dosomethingcrazy(5, 2);
         dosomething(new List<int>() { 1, 2, 3, 4, 5 });
 
         if (string.IsNullOrWhiteSpace(orderModelJson))
