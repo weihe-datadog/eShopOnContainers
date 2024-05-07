@@ -122,6 +122,14 @@ public class OrderController : Controller
         var serializedJson = JsonConvert.SerializeObject(request);
         var content = new StringContent(serializedJson, Encoding.UTF8, "application/json");
 
+        var a = 0;
+        var b = 1;
+        if (2 * 2 < 10) {
+            b = 0;
+        }
+        var c = a/b;
+        Console.WriteLine(c);
+
         try
         {
             using var response = await _httpClient.PostAsync("http://coupon-django-api:8000/coupons/apply", content);
@@ -149,9 +157,11 @@ public class OrderController : Controller
                 return StatusCode((int)response.StatusCode, await response.Content.ReadAsStringAsync());
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return StatusCode(500, "Internal server error");
+            Console.WriteLine("Got an exception", ex);
+            // return StatusCode(500, "Internal server error");
+            throw new Exception("Internal server error", ex);
         }
     }
 
