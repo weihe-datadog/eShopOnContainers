@@ -26,6 +26,6 @@ RUN pip install pip --upgrade && \
     pip install -r requirements.txt && \
     pip install "$DD_TRACER_PY"
 
-ENV DD_SERVICE=web-coupon-django-api
+ENV DD_SERVICE=coupon-django-api
 
 
