@@ -38,18 +38,12 @@ def apply_coupon(request):
         if not coupon_code or not items:
             raise Http404("Missing coupon code or items.")
 
-        for item in items:
-            if 'unit_price' not in item or not isinstance(item['unit_price'], (int, float)):
-                raise Http404("Item price missing or invalid.")
-            if 'units' not in item or not isinstance(item['units'], int):
-                raise Http404("Item units missing or invalid.")
         conn = get_db_connection()
         cursor = conn.cursor(cursor_factory=psycopg2.extras.NamedTupleCursor)
         cursor.execute("SELECT discount_type, discount_value, expiration_date FROM coupons WHERE code = %s", (coupon_code,))
         coupon = cursor.fetchone()
 
         print(f"Coupon: {coupon}")
-        # 
         
         if not coupon:
             raise Http404("Coupon code not found.")
