@@ -192,7 +192,7 @@ services:
     depends_on:
       - webshoppingagg
       - webshoppingapigw
-      - coupon-api
+      - coupon-django-api
     <<: *common-env
 
   webhooks-client:

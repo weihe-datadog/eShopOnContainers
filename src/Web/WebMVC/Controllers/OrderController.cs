@@ -124,7 +124,7 @@ public class OrderController : Controller
 
         try
         {
-            using var response = await _httpClient.PostAsync("http://coupon-api:5000/apply-coupon", content);
+            using var response = await _httpClient.PostAsync("http://coupon-django-api:8000/coupons/apply", content);
             if (response.IsSuccessStatusCode)
             {
                 var responseBody = await response.Content.ReadAsStringAsync();

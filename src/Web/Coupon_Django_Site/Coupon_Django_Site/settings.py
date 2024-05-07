@@ -25,7 +25,9 @@ SECRET_KEY = 'django-insecure-^&m*e)f22p5#@#!=o&20+4pkfcdhxjr1#07cx66!_r3ct5%s(c
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost',
+  '127.0.0.1',
+  'coupon-django-api']
 
 
 # Application definition
