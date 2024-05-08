@@ -1,4 +1,24 @@
-﻿namespace Microsoft.eShopOnContainers.WebMVC;
+﻿using System.Text.Encodings.Web;
+
+namespace Microsoft.eShopOnContainers.WebMVC;
+
+class DummyAuthenticationHandler : AuthenticationHandler<AuthenticationSchemeOptions>
+{
+    public DummyAuthenticationHandler(IOptionsMonitor<AuthenticationSchemeOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
+        : base(options, logger, encoder, clock)
+    {
+    }
+
+    protected override Task<AuthenticateResult> HandleAuthenticateAsync()
+    {
+        var claims = new[] { new Claim(ClaimTypes.Name, "DummyUser") };
+        var identity = new ClaimsIdentity(claims, "DummyScheme");
+        var principal = new ClaimsPrincipal(identity);
+        var ticket = new AuthenticationTicket(principal, "DummyScheme");
+
+        return Task.FromResult(AuthenticateResult.Success(ticket));
+    }
+}
 
 public class Startup
 {
@@ -22,7 +42,9 @@ public class Startup
 
         IdentityModelEventSource.ShowPII = true;       // Caution! Do NOT use in production: https://aka.ms/IdentityModel/PII
 
-        services.AddCustomAuthentication(Configuration);
+    services.AddAuthentication("DummyScheme")
+        .AddScheme<AuthenticationSchemeOptions, DummyAuthenticationHandler>("DummyScheme", options => {});
+        // services.AddCustomAuthentication(Configuration);
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

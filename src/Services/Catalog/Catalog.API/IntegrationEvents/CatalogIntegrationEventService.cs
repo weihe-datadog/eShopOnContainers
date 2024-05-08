@@ -3,7 +3,7 @@
 public class CatalogIntegrationEventService : ICatalogIntegrationEventService, IDisposable
 {
     private readonly Func<DbConnection, IIntegrationEventLogService> _integrationEventLogServiceFactory;
-    private readonly IEventBus _eventBus;
+    // private readonly IEventBus _eventBus;
     private readonly CatalogContext _catalogContext;
     private readonly IIntegrationEventLogService _eventLogService;
     private readonly ILogger<CatalogIntegrationEventService> _logger;
@@ -11,14 +11,14 @@ public class CatalogIntegrationEventService : ICatalogIntegrationEventService, I
 
     public CatalogIntegrationEventService(
         ILogger<CatalogIntegrationEventService> logger,
-        IEventBus eventBus,
+        // IEventBus eventBus,
         CatalogContext catalogContext,
         Func<DbConnection, IIntegrationEventLogService> integrationEventLogServiceFactory)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _catalogContext = catalogContext ?? throw new ArgumentNullException(nameof(catalogContext));
         _integrationEventLogServiceFactory = integrationEventLogServiceFactory ?? throw new ArgumentNullException(nameof(integrationEventLogServiceFactory));
-        _eventBus = eventBus ?? throw new ArgumentNullException(nameof(eventBus));
+        // _eventBus = eventBus ?? throw new ArgumentNullException(nameof(eventBus));
         _eventLogService = _integrationEventLogServiceFactory(_catalogContext.Database.GetDbConnection());
     }
 
@@ -29,7 +29,7 @@ public class CatalogIntegrationEventService : ICatalogIntegrationEventService, I
             _logger.LogInformation("----- Publishing integration event: {IntegrationEventId_published} from {AppName} - ({@IntegrationEvent})", evt.Id, Program.AppName, evt);
 
             await _eventLogService.MarkEventAsInProgressAsync(evt.Id);
-            _eventBus.Publish(evt);
+            // _eventBus.Publish(evt);
             await _eventLogService.MarkEventAsPublishedAsync(evt.Id);
         }
         catch (Exception ex)

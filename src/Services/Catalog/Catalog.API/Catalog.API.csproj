@@ -13,6 +13,7 @@
   </PropertyGroup>
 
 
+  <PropertyGroup Condition=" '$(RunConfiguration)' == 'Microsoft.eShopOnContainers.Services.Catalog.API' " />
   <ItemGroup>
     <Content Update="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -68,7 +69,7 @@
     <PackageReference Include="Serilog.Sinks.Seq" Version="5.2.3-dev-00260" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
     <PackageReference Include="Swashbuckle.AspNetCore.Newtonsoft" Version="6.4.0" />
-    <PackageReference Include="System.Data.SqlClient" version="4.8.5" />
+    <PackageReference Include="System.Data.SqlClient" version="4.8.5" Version="4.8.5" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="7.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="7.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="7.0.0">

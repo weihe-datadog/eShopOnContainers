@@ -17,7 +17,7 @@ public class Startup
             .AddCustomDbContext(Configuration)
             .AddCustomOptions(Configuration)
             .AddIntegrationServices(Configuration)
-            .AddEventBus(Configuration)
+            // .AddEventBus(Configuration)
             .AddSwagger(Configuration)
             .AddCustomHealthCheck(Configuration);
 
@@ -80,15 +80,15 @@ public class Startup
             });
         });
 
-        ConfigureEventBus(app);
+        // ConfigureEventBus(app);
     }
 
-    protected virtual void ConfigureEventBus(IApplicationBuilder app)
-    {
-        var eventBus = app.ApplicationServices.GetRequiredService<IEventBus>();
-        eventBus.Subscribe<OrderStatusChangedToAwaitingValidationIntegrationEvent, OrderStatusChangedToAwaitingValidationIntegrationEventHandler>();
-        eventBus.Subscribe<OrderStatusChangedToPaidIntegrationEvent, OrderStatusChangedToPaidIntegrationEventHandler>();
-    }
+    // protected virtual void ConfigureEventBus(IApplicationBuilder app)
+    // {
+    //     var eventBus = app.ApplicationServices.GetRequiredService<IEventBus>();
+    //     eventBus.Subscribe<OrderStatusChangedToAwaitingValidationIntegrationEvent, OrderStatusChangedToAwaitingValidationIntegrationEventHandler>();
+    //     eventBus.Subscribe<OrderStatusChangedToPaidIntegrationEvent, OrderStatusChangedToPaidIntegrationEventHandler>();
+    // }
 }
 
 public static class CustomExtensionMethods
@@ -289,44 +289,44 @@ public static class CustomExtensionMethods
 
     public static IServiceCollection AddEventBus(this IServiceCollection services, IConfiguration configuration)
     {
-        if (configuration.GetValue<bool>("AzureServiceBusEnabled"))
-        {
-            services.AddSingleton<IEventBus, EventBusServiceBus>(sp =>
-            {
-                var serviceBusPersisterConnection = sp.GetRequiredService<IServiceBusPersisterConnection>();
-                var iLifetimeScope = sp.GetRequiredService<ILifetimeScope>();
-                var logger = sp.GetRequiredService<ILogger<EventBusServiceBus>>();
-                var eventBusSubcriptionsManager = sp.GetRequiredService<IEventBusSubscriptionsManager>();
-                string subscriptionName = configuration["SubscriptionClientName"];
+        // if (configuration.GetValue<bool>("AzureServiceBusEnabled"))
+        // {
+        //     services.AddSingleton<IEventBus, EventBusServiceBus>(sp =>
+        //     {
+        //         var serviceBusPersisterConnection = sp.GetRequiredService<IServiceBusPersisterConnection>();
+        //         var iLifetimeScope = sp.GetRequiredService<ILifetimeScope>();
+        //         var logger = sp.GetRequiredService<ILogger<EventBusServiceBus>>();
+        //         var eventBusSubcriptionsManager = sp.GetRequiredService<IEventBusSubscriptionsManager>();
+        //         string subscriptionName = configuration["SubscriptionClientName"];
 
-                return new EventBusServiceBus(serviceBusPersisterConnection, logger,
-                    eventBusSubcriptionsManager, iLifetimeScope, subscriptionName);
-            });
+        //         return new EventBusServiceBus(serviceBusPersisterConnection, logger,
+        //             eventBusSubcriptionsManager, iLifetimeScope, subscriptionName);
+        //     });
 
-        }
-        else
-        {
-            services.AddSingleton<IEventBus, EventBusRabbitMQ>(sp =>
-            {
-                var subscriptionClientName = configuration["SubscriptionClientName"];
-                var rabbitMQPersistentConnection = sp.GetRequiredService<IRabbitMQPersistentConnection>();
-                var iLifetimeScope = sp.GetRequiredService<ILifetimeScope>();
-                var logger = sp.GetRequiredService<ILogger<EventBusRabbitMQ>>();
-                var eventBusSubcriptionsManager = sp.GetRequiredService<IEventBusSubscriptionsManager>();
+        // }
+        // else
+        // {
+        //     services.AddSingleton<IEventBus, EventBusRabbitMQ>(sp =>
+        //     {
+        //         var subscriptionClientName = configuration["SubscriptionClientName"];
+        //         var rabbitMQPersistentConnection = sp.GetRequiredService<IRabbitMQPersistentConnection>();
+        //         var iLifetimeScope = sp.GetRequiredService<ILifetimeScope>();
+        //         var logger = sp.GetRequiredService<ILogger<EventBusRabbitMQ>>();
+        //         var eventBusSubcriptionsManager = sp.GetRequiredService<IEventBusSubscriptionsManager>();
 
-                var retryCount = 5;
-                if (!string.IsNullOrEmpty(configuration["EventBusRetryCount"]))
-                {
-                    retryCount = int.Parse(configuration["EventBusRetryCount"]);
-                }
+        //         var retryCount = 5;
+        //         if (!string.IsNullOrEmpty(configuration["EventBusRetryCount"]))
+        //         {
+        //             retryCount = int.Parse(configuration["EventBusRetryCount"]);
+        //         }
 
-                return new EventBusRabbitMQ(rabbitMQPersistentConnection, logger, iLifetimeScope, eventBusSubcriptionsManager, subscriptionClientName, retryCount);
-            });
-        }
+        //         return new EventBusRabbitMQ(rabbitMQPersistentConnection, logger, iLifetimeScope, eventBusSubcriptionsManager, subscriptionClientName, retryCount);
+        //     });
+        // }
 
-        services.AddSingleton<IEventBusSubscriptionsManager, InMemoryEventBusSubscriptionsManager>();
-        services.AddTransient<OrderStatusChangedToAwaitingValidationIntegrationEventHandler>();
-        services.AddTransient<OrderStatusChangedToPaidIntegrationEventHandler>();
+        // services.AddSingleton<IEventBusSubscriptionsManager, InMemoryEventBusSubscriptionsManager>();
+        // services.AddTransient<OrderStatusChangedToAwaitingValidationIntegrationEventHandler>();
+        // services.AddTransient<OrderStatusChangedToPaidIntegrationEventHandler>();
 
         return services;
     }

@@ -3,12 +3,12 @@
 public class OrderingIntegrationEventService : IOrderingIntegrationEventService
 {
     private readonly Func<DbConnection, IIntegrationEventLogService> _integrationEventLogServiceFactory;
-    private readonly IEventBus _eventBus;
+    // private readonly IEventBus _eventBus;
     private readonly OrderingContext _orderingContext;
     private readonly IIntegrationEventLogService _eventLogService;
     private readonly ILogger<OrderingIntegrationEventService> _logger;
 
-    public OrderingIntegrationEventService(IEventBus eventBus,
+    public OrderingIntegrationEventService(/*IEventBus eventBus,*/
         OrderingContext orderingContext,
         IntegrationEventLogContext eventLogContext,
         Func<DbConnection, IIntegrationEventLogService> integrationEventLogServiceFactory,
@@ -16,7 +16,7 @@ public class OrderingIntegrationEventService : IOrderingIntegrationEventService
     {
         _orderingContext = orderingContext ?? throw new ArgumentNullException(nameof(orderingContext));
         _integrationEventLogServiceFactory = integrationEventLogServiceFactory ?? throw new ArgumentNullException(nameof(integrationEventLogServiceFactory));
-        _eventBus = eventBus ?? throw new ArgumentNullException(nameof(eventBus));
+        // _eventBus = eventBus ?? throw new ArgumentNullException(nameof(eventBus));
         _eventLogService = _integrationEventLogServiceFactory(_orderingContext.Database.GetDbConnection());
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
@@ -32,7 +32,7 @@ public class OrderingIntegrationEventService : IOrderingIntegrationEventService
             try
             {
                 await _eventLogService.MarkEventAsInProgressAsync(logEvt.EventId);
-                _eventBus.Publish(logEvt.IntegrationEvent);
+                // _eventBus.Publish(logEvt.IntegrationEvent);
                 await _eventLogService.MarkEventAsPublishedAsync(logEvt.EventId);
             }
             catch (Exception ex)

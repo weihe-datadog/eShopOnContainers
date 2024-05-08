@@ -24,163 +24,163 @@ x-common-build-args: &common-build-args
     DD_TRACER_PY: "git+https://github.com/P403n1x87/dd-trace-py.git@chore/span-origin"
 services:
 
-  seq:
-    image: datalust/seq:latest
+  # seq:
+  #   image: datalust/seq:latest
 
-  sqldata:
-    image: mcr.microsoft.com/mssql/server:2019-latest 
+  # sqldata:
+  #   image: mcr.microsoft.com/mssql/server:2019-latest 
 
-  nosqldata:
-    image: mongo
+  # nosqldata:
+  #   image: mongo
 
-  basketdata:
-    image: redis:alpine
+  # basketdata:
+  #   image: redis:alpine
 
-  rabbitmq:
-    image: rabbitmq:3-management-alpine
+  # rabbitmq:
+  #   image: rabbitmq:3-management-alpine
 
-  identity-api:
-    image: ${REGISTRY:-eshop}/identity.api:${PLATFORM:-linux}-${TAG:-latest}
-    build:
-      context: .
-      dockerfile: Services/Identity/Identity.API/Dockerfile
-      <<: *common-build-args
-    depends_on:
-      - sqldata
-    <<: *common-env
+  # identity-api:
+  #   image: ${REGISTRY:-eshop}/identity.api:${PLATFORM:-linux}-${TAG:-latest}
+  #   build:
+  #     context: .
+  #     dockerfile: Services/Identity/Identity.API/Dockerfile
+  #     <<: *common-build-args
+  #   depends_on:
+  #     - sqldata
+  #   <<: *common-env
 
-  basket-api:
-    image: ${REGISTRY:-eshop}/basket.api:${PLATFORM:-linux}-${TAG:-latest}
-    build:
-      context: .
-      dockerfile: Services/Basket/Basket.API/Dockerfile
-      <<: *common-build-args
-    depends_on:
-      - basketdata
-      - identity-api
-      - rabbitmq
-    <<: *common-env
+  # basket-api:
+  #   image: ${REGISTRY:-eshop}/basket.api:${PLATFORM:-linux}-${TAG:-latest}
+  #   build:
+  #     context: .
+  #     dockerfile: Services/Basket/Basket.API/Dockerfile
+  #     <<: *common-build-args
+  #   depends_on:
+  #     - basketdata
+  #     - identity-api
+  #     # - rabbitmq
+  #   <<: *common-env
 
-  catalog-api:
-    image: ${REGISTRY:-eshop}/catalog.api:${PLATFORM:-linux}-${TAG:-latest}
-    build:
-      context: .
-      dockerfile: Services/Catalog/Catalog.API/Dockerfile
-      <<: *common-build-args
-    depends_on:
-      - sqldata
-      - rabbitmq
-    <<: *common-env
+  # catalog-api:
+  #   image: ${REGISTRY:-eshop}/catalog.api:${PLATFORM:-linux}-${TAG:-latest}
+  #   build:
+  #     context: .
+  #     dockerfile: Services/Catalog/Catalog.API/Dockerfile
+  #     <<: *common-build-args
+  #   depends_on:
+  #     - sqldata
+  #     # - rabbitmq
+  #   <<: *common-env
 
-  ordering-api:
-    image: ${REGISTRY:-eshop}/ordering.api:${PLATFORM:-linux}-${TAG:-latest}
-    build:
-      context: .
-      dockerfile: Services/Ordering/Ordering.API/Dockerfile
-      <<: *common-build-args
-    depends_on:
-      - sqldata
-      - rabbitmq
-    <<: *common-env
+  # ordering-api:
+  #   image: ${REGISTRY:-eshop}/ordering.api:${PLATFORM:-linux}-${TAG:-latest}
+  #   build:
+  #     context: .
+  #     dockerfile: Services/Ordering/Ordering.API/Dockerfile
+  #     <<: *common-build-args
+  #   depends_on:
+  #     - sqldata
+  #     # - rabbitmq
+  #   <<: *common-env
 
-  ordering-backgroundtasks:
-    image: ${REGISTRY:-eshop}/ordering.backgroundtasks:${PLATFORM:-linux}-${TAG:-latest}
-    build:
-      context: .
-      dockerfile: Services/Ordering/Ordering.BackgroundTasks/Dockerfile
-      <<: *common-build-args
-    depends_on:
-      - sqldata
-      - rabbitmq
-    <<: *common-env
+  # ordering-backgroundtasks:
+  #   image: ${REGISTRY:-eshop}/ordering.backgroundtasks:${PLATFORM:-linux}-${TAG:-latest}
+  #   build:
+  #     context: .
+  #     dockerfile: Services/Ordering/Ordering.BackgroundTasks/Dockerfile
+  #     <<: *common-build-args
+  #   depends_on:
+  #     - sqldata
+  #     - rabbitmq
+  #   <<: *common-env
 
-  payment-api:
-    image: ${REGISTRY:-eshop}/payment.api:${PLATFORM:-linux}-${TAG:-latest}
-    build:
-      context: .
-      dockerfile: Services/Payment/Payment.API/Dockerfile
-      <<: *common-build-args
-    depends_on:
-      - rabbitmq
-    <<: *common-env
+  # payment-api:
+  #   image: ${REGISTRY:-eshop}/payment.api:${PLATFORM:-linux}-${TAG:-latest}
+  #   build:
+  #     context: .
+  #     dockerfile: Services/Payment/Payment.API/Dockerfile
+  #     <<: *common-build-args
+  #   depends_on:
+  #     - rabbitmq
+  #   <<: *common-env
 
-  webhooks-api:
-    image: ${REGISTRY:-eshop}/webhooks.api:${PLATFORM:-linux}-${TAG:-latest}
-    build:
-      context: .
-      dockerfile: Services/Webhooks/Webhooks.API/Dockerfile
-      <<: *common-build-args
-    depends_on:
-      - sqldata
-    <<: *common-env
+  # webhooks-api:
+  #   image: ${REGISTRY:-eshop}/webhooks.api:${PLATFORM:-linux}-${TAG:-latest}
+  #   build:
+  #     context: .
+  #     dockerfile: Services/Webhooks/Webhooks.API/Dockerfile
+  #     <<: *common-build-args
+  #   depends_on:
+  #     - sqldata
+  #   <<: *common-env
 
-  mobileshoppingapigw:
-    image: envoyproxy/envoy:v1.11.1
+  # mobileshoppingapigw:
+  #   image: envoyproxy/envoy:v1.11.1
 
-  mobileshoppingagg:
-    image: ${REGISTRY:-eshop}/mobileshoppingagg:${PLATFORM:-linux}-${TAG:-latest}
-    build:
-      context: .
-      dockerfile: ApiGateways/Mobile.Bff.Shopping/aggregator/Dockerfile
-      <<: *common-build-args
-    depends_on:
-      - nosqldata
-      - sqldata
-      - identity-api
-      - rabbitmq
-      - ordering-api
-      - catalog-api
-      - basket-api
-    <<: *common-env
+  # mobileshoppingagg:
+  #   image: ${REGISTRY:-eshop}/mobileshoppingagg:${PLATFORM:-linux}-${TAG:-latest}
+  #   build:
+  #     context: .
+  #     dockerfile: ApiGateways/Mobile.Bff.Shopping/aggregator/Dockerfile
+  #     <<: *common-build-args
+  #   depends_on:
+  #     # - nosqldata
+  #     - sqldata
+  #     - identity-api
+  #     # - rabbitmq
+  #     - ordering-api
+  #     - catalog-api
+  #     - basket-api
+  #   <<: *common-env
 
-  webshoppingagg:
-    image: ${REGISTRY:-eshop}/webshoppingagg:${PLATFORM:-linux}-${TAG:-latest}
-    build:
-      context: .
-      dockerfile: ApiGateways/Web.Bff.Shopping/aggregator/Dockerfile
-      <<: *common-build-args
-    depends_on:
-      - nosqldata
-      - sqldata
-      - identity-api
-      - rabbitmq
-      - ordering-api
-      - catalog-api
-      - basket-api
-    <<: *common-env
+  # webshoppingagg:
+  #   image: ${REGISTRY:-eshop}/webshoppingagg:${PLATFORM:-linux}-${TAG:-latest}
+  #   build:
+  #     context: .
+  #     dockerfile: ApiGateways/Web.Bff.Shopping/aggregator/Dockerfile
+  #     <<: *common-build-args
+  #   depends_on:
+  #     # - nosqldata
+  #     # - sqldata
+  #     - identity-api
+  #     # - rabbitmq
+  #     # - ordering-api
+  #     # - catalog-api
+  #     # - basket-api
+  #   <<: *common-env
 
-  ordering-signalrhub:
-    image: ${REGISTRY:-eshop}/ordering.signalrhub:${PLATFORM:-linux}-${TAG:-latest}
-    build:
-      context: .
-      dockerfile: Services/Ordering/Ordering.SignalrHub/Dockerfile
-      <<: *common-build-args
-    depends_on:
-      - nosqldata
-      - sqldata
-      - identity-api
-      - rabbitmq
-      - ordering-api
-      - catalog-api
-      - basket-api
-    <<: *common-env
+  # ordering-signalrhub:
+  #   image: ${REGISTRY:-eshop}/ordering.signalrhub:${PLATFORM:-linux}-${TAG:-latest}
+  #   build:
+  #     context: .
+  #     dockerfile: Services/Ordering/Ordering.SignalrHub/Dockerfile
+  #     <<: *common-build-args
+  #   depends_on:
+  #     - nosqldata
+  #     - sqldata
+  #     - identity-api
+  #     - rabbitmq
+  #     - ordering-api
+  #     - catalog-api
+  #     - basket-api
+  #   <<: *common-env
 
-  webstatus:
-    image: ${REGISTRY:-eshop}/webstatus:${PLATFORM:-linux}-${TAG:-latest}
-    build:
-      context: .
-      dockerfile: Web/WebStatus/Dockerfile
+  # webstatus:
+  #   image: ${REGISTRY:-eshop}/webstatus:${PLATFORM:-linux}-${TAG:-latest}
+  #   build:
+  #     context: .
+  #     dockerfile: Web/WebStatus/Dockerfile
 
-  webspa:
-    image: ${REGISTRY:-eshop}/webspa:${PLATFORM:-linux}-${TAG:-latest}
-    build:
-      context: .
-      dockerfile: Web/WebSPA/Dockerfile
-      args:
-        NODE_IMAGE: ${NODE_IMAGE:-node:12.0}
-    depends_on:
-      - webshoppingagg
-      - webshoppingapigw
+  # webspa:
+  #   image: ${REGISTRY:-eshop}/webspa:${PLATFORM:-linux}-${TAG:-latest}
+  #   build:
+  #     context: .
+  #     dockerfile: Web/WebSPA/Dockerfile
+  #     args:
+  #       NODE_IMAGE: ${NODE_IMAGE:-node:12.0}
+  #   depends_on:
+  #     - webshoppingagg
+  #     - webshoppingapigw
 
   webmvc:
     image: ${REGISTRY:-eshop}/webmvc:${PLATFORM:-linux}-${TAG:-latest}
@@ -190,20 +190,21 @@ services:
       <<: *common-build-args
     platform: linux/arm64
     depends_on:
-      - webshoppingagg
-      - webshoppingapigw
+      # - webshoppingagg
+      # - identity-api
+      # - webshoppingapigw
       - coupon-django-api
     <<: *common-env
 
-  webhooks-client:
-    image: ${REGISTRY:-eshop}/webhooks.client:${PLATFORM:-linux}-${TAG:-latest}
-    build:
-      context: .
-      dockerfile: Web/WebhookClient/Dockerfile
-      <<: *common-build-args
-    depends_on:
-      - webhooks-api
-    <<: *common-env
+  # webhooks-client:
+  #   image: ${REGISTRY:-eshop}/webhooks.client:${PLATFORM:-linux}-${TAG:-latest}
+  #   build:
+  #     context: .
+  #     dockerfile: Web/WebhookClient/Dockerfile
+  #     <<: *common-build-args
+  #   depends_on:
+  #     - webhooks-api
+  #   <<: *common-env
 
   coupondb:
     image: postgres:latest
@@ -216,23 +217,23 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./Web/Coupon/init_db.sql:/docker-entrypoint-initdb.d/init_db.sql
-  webshoppingapigw:
-    image: envoyproxy/envoy:v1.11.1
+  # webshoppingapigw:
+  #   image: envoyproxy/envoy:v1.11.1
 
-  coupon-api:
-    image: ${REGISTRY:-eshop}/coupon.api:${PLATFORM:-linux}-${TAG:-latest}
-    build:
-      context: Web/Coupon
-      dockerfile: ./Dockerfile
-      <<: *common-build-args
-    command: ddtrace-run python3 app.py
-    volumes:
-      - .:/code
-    ports:
-      - "5000:5000"
-    depends_on:
-      - coupondb
-    <<: *common-env
+  # coupon-api:
+  #   image: ${REGISTRY:-eshop}/coupon.api:${PLATFORM:-linux}-${TAG:-latest}
+  #   build:
+  #     context: Web/Coupon
+  #     dockerfile: ./Dockerfile
+  #     <<: *common-build-args
+  #   command: ddtrace-run python3 app.py
+  #   volumes:
+  #     - .:/code
+  #   ports:
+  #     - "5000:5000"
+  #   depends_on:
+  #     - coupondb
+  #   <<: *common-env
   
   coupon-django-api:
     image: ${REGISTRY:-eshop}/coupon-django.api:${PLATFORM:-linux}-${TAG:-latest}

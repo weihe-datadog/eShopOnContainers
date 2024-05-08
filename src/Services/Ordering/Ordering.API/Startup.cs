@@ -28,8 +28,8 @@ public class Startup
             .AddCustomAuthentication(Configuration)
             .AddCustomAuthorization(Configuration)
             .AddCustomIntegrations(Configuration)
-            .AddCustomConfiguration(Configuration)
-            .AddEventBus(Configuration);
+            .AddCustomConfiguration(Configuration);
+            // .AddEventBus(Configuration);
         //configure autofac
 
         var container = new ContainerBuilder();
@@ -96,21 +96,21 @@ public class Startup
             });
         });
 
-        ConfigureEventBus(app);
+        // ConfigureEventBus(app);
     }
 
 
-    private void ConfigureEventBus(IApplicationBuilder app)
-    {
-        var eventBus = app.ApplicationServices.GetRequiredService<BuildingBlocks.EventBus.Abstractions.IEventBus>();
+    // private void ConfigureEventBus(IApplicationBuilder app)
+    // {
+    //     var eventBus = app.ApplicationServices.GetRequiredService<BuildingBlocks.EventBus.Abstractions.IEventBus>();
 
-        eventBus.Subscribe<UserCheckoutAcceptedIntegrationEvent, IIntegrationEventHandler<UserCheckoutAcceptedIntegrationEvent>>();
-        eventBus.Subscribe<GracePeriodConfirmedIntegrationEvent, IIntegrationEventHandler<GracePeriodConfirmedIntegrationEvent>>();
-        eventBus.Subscribe<OrderStockConfirmedIntegrationEvent, IIntegrationEventHandler<OrderStockConfirmedIntegrationEvent>>();
-        eventBus.Subscribe<OrderStockRejectedIntegrationEvent, IIntegrationEventHandler<OrderStockRejectedIntegrationEvent>>();
-        eventBus.Subscribe<OrderPaymentFailedIntegrationEvent, IIntegrationEventHandler<OrderPaymentFailedIntegrationEvent>>();
-        eventBus.Subscribe<OrderPaymentSucceededIntegrationEvent, IIntegrationEventHandler<OrderPaymentSucceededIntegrationEvent>>();
-    }
+    //     eventBus.Subscribe<UserCheckoutAcceptedIntegrationEvent, IIntegrationEventHandler<UserCheckoutAcceptedIntegrationEvent>>();
+    //     eventBus.Subscribe<GracePeriodConfirmedIntegrationEvent, IIntegrationEventHandler<GracePeriodConfirmedIntegrationEvent>>();
+    //     eventBus.Subscribe<OrderStockConfirmedIntegrationEvent, IIntegrationEventHandler<OrderStockConfirmedIntegrationEvent>>();
+    //     eventBus.Subscribe<OrderStockRejectedIntegrationEvent, IIntegrationEventHandler<OrderStockRejectedIntegrationEvent>>();
+    //     eventBus.Subscribe<OrderPaymentFailedIntegrationEvent, IIntegrationEventHandler<OrderPaymentFailedIntegrationEvent>>();
+    //     eventBus.Subscribe<OrderPaymentSucceededIntegrationEvent, IIntegrationEventHandler<OrderPaymentSucceededIntegrationEvent>>();
+    // }
 
     protected virtual void ConfigureAuth(IApplicationBuilder app)
     {
@@ -176,11 +176,11 @@ static class CustomExtensionsMethods
         }
         else
         {
-            hcBuilder
-                .AddRabbitMQ(
-                    $"amqp://{configuration["EventBusConnection"]}",
-                    name: "ordering-rabbitmqbus-check",
-                    tags: new string[] { "rabbitmqbus" });
+            // hcBuilder
+            //     .AddRabbitMQ(
+            //         $"amqp://{configuration["EventBusConnection"]}",
+            //         name: "ordering-rabbitmqbus-check",
+            //         tags: new string[] { "rabbitmqbus" });
         }
 
         return services;
@@ -328,46 +328,46 @@ static class CustomExtensionsMethods
         return services;
     }
 
-    public static IServiceCollection AddEventBus(this IServiceCollection services, IConfiguration configuration)
-    {
-        if (configuration.GetValue<bool>("AzureServiceBusEnabled"))
-        {
-            services.AddSingleton<IEventBus, EventBusServiceBus>(sp =>
-            {
-                var serviceBusPersisterConnection = sp.GetRequiredService<IServiceBusPersisterConnection>();
-                var iLifetimeScope = sp.GetRequiredService<ILifetimeScope>();
-                var logger = sp.GetRequiredService<ILogger<EventBusServiceBus>>();
-                var eventBusSubcriptionsManager = sp.GetRequiredService<IEventBusSubscriptionsManager>();
-                string subscriptionName = configuration["SubscriptionClientName"];
+    // public static IServiceCollection AddEventBus(this IServiceCollection services, IConfiguration configuration)
+    // {
+    //     if (configuration.GetValue<bool>("AzureServiceBusEnabled"))
+    //     {
+    //         services.AddSingleton<IEventBus, EventBusServiceBus>(sp =>
+    //         {
+    //             var serviceBusPersisterConnection = sp.GetRequiredService<IServiceBusPersisterConnection>();
+    //             var iLifetimeScope = sp.GetRequiredService<ILifetimeScope>();
+    //             var logger = sp.GetRequiredService<ILogger<EventBusServiceBus>>();
+    //             var eventBusSubcriptionsManager = sp.GetRequiredService<IEventBusSubscriptionsManager>();
+    //             string subscriptionName = configuration["SubscriptionClientName"];
 
-                return new EventBusServiceBus(serviceBusPersisterConnection, logger,
-                    eventBusSubcriptionsManager, iLifetimeScope, subscriptionName);
-            });
-        }
-        else
-        {
-            services.AddSingleton<IEventBus, EventBusRabbitMQ>(sp =>
-            {
-                var subscriptionClientName = configuration["SubscriptionClientName"];
-                var rabbitMQPersistentConnection = sp.GetRequiredService<IRabbitMQPersistentConnection>();
-                var iLifetimeScope = sp.GetRequiredService<ILifetimeScope>();
-                var logger = sp.GetRequiredService<ILogger<EventBusRabbitMQ>>();
-                var eventBusSubcriptionsManager = sp.GetRequiredService<IEventBusSubscriptionsManager>();
+    //             return new EventBusServiceBus(serviceBusPersisterConnection, logger,
+    //                 eventBusSubcriptionsManager, iLifetimeScope, subscriptionName);
+    //         });
+    //     }
+    //     else
+    //     {
+    //         services.AddSingleton<IEventBus, EventBusRabbitMQ>(sp =>
+    //         {
+    //             var subscriptionClientName = configuration["SubscriptionClientName"];
+    //             var rabbitMQPersistentConnection = sp.GetRequiredService<IRabbitMQPersistentConnection>();
+    //             var iLifetimeScope = sp.GetRequiredService<ILifetimeScope>();
+    //             var logger = sp.GetRequiredService<ILogger<EventBusRabbitMQ>>();
+    //             var eventBusSubcriptionsManager = sp.GetRequiredService<IEventBusSubscriptionsManager>();
 
-                var retryCount = 5;
-                if (!string.IsNullOrEmpty(configuration["EventBusRetryCount"]))
-                {
-                    retryCount = int.Parse(configuration["EventBusRetryCount"]);
-                }
+    //             var retryCount = 5;
+    //             if (!string.IsNullOrEmpty(configuration["EventBusRetryCount"]))
+    //             {
+    //                 retryCount = int.Parse(configuration["EventBusRetryCount"]);
+    //             }
 
-                return new EventBusRabbitMQ(rabbitMQPersistentConnection, logger, iLifetimeScope, eventBusSubcriptionsManager, subscriptionClientName, retryCount);
-            });
-        }
+    //             return new EventBusRabbitMQ(rabbitMQPersistentConnection, logger, iLifetimeScope, eventBusSubcriptionsManager, subscriptionClientName, retryCount);
+    //         });
+    //     }
 
-        services.AddSingleton<IEventBusSubscriptionsManager, InMemoryEventBusSubscriptionsManager>();
+    //     services.AddSingleton<IEventBusSubscriptionsManager, InMemoryEventBusSubscriptionsManager>();
 
-        return services;
-    }
+    //     return services;
+    // }
 
     public static IServiceCollection AddCustomAuthentication(this IServiceCollection services, IConfiguration configuration)
     {

@@ -7,19 +7,19 @@ public class BasketController : ControllerBase
 {
     private readonly IBasketRepository _repository;
     private readonly IIdentityService _identityService;
-    private readonly IEventBus _eventBus;
+    // private readonly IEventBus _eventBus;
     private readonly ILogger<BasketController> _logger;
 
     public BasketController(
         ILogger<BasketController> logger,
         IBasketRepository repository,
-        IIdentityService identityService,
-        IEventBus eventBus)
+        IIdentityService identityService
+        /*IEventBus eventBus*/)
     {
         _logger = logger;
         _repository = repository;
         _identityService = identityService;
-        _eventBus = eventBus;
+        // _eventBus = eventBus;
     }
 
     [HttpGet("{id}")]
@@ -65,16 +65,16 @@ public class BasketController : ControllerBase
         // Once basket is checkout, sends an integration event to
         // ordering.api to convert basket to order and proceeds with
         // order creation process
-        try
-        {
-            _eventBus.Publish(eventMessage);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "ERROR Publishing integration event: {IntegrationEventId} from {AppName}", eventMessage.Id, Program.AppName);
+        // try
+        // {
+        //     _eventBus.Publish(eventMessage);
+        // }
+        // catch (Exception ex)
+        // {
+        //     _logger.LogError(ex, "ERROR Publishing integration event: {IntegrationEventId} from {AppName}", eventMessage.Id, Program.AppName);
 
-            throw;
-        }
+        //     throw;
+        // }
 
         return Accepted();
     }

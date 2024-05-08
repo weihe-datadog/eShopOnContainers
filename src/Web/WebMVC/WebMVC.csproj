@@ -9,6 +9,7 @@
     <IsTransformWebConfigDisabled>true</IsTransformWebConfigDisabled>    
   </PropertyGroup>
 
+  <PropertyGroup Condition=" '$(RunConfiguration)' == 'Microsoft.eShopOnContainers.WebMVC' " />
   <ItemGroup>
     <Content Include="Setup\images.zip">
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>

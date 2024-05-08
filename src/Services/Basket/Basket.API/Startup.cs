@@ -201,7 +201,7 @@ public class Startup
             });
         });
 
-        ConfigureEventBus(app);
+        // ConfigureEventBus(app);
     }
 
     private void RegisterAppInsights(IServiceCollection services)
@@ -242,51 +242,51 @@ public class Startup
 
     private void RegisterEventBus(IServiceCollection services)
     {
-        if (Configuration.GetValue<bool>("AzureServiceBusEnabled"))
-        {
-            services.AddSingleton<IEventBus, EventBusServiceBus>(sp =>
-            {
-                var serviceBusPersisterConnection = sp.GetRequiredService<IServiceBusPersisterConnection>();
-                var iLifetimeScope = sp.GetRequiredService<ILifetimeScope>();
-                var logger = sp.GetRequiredService<ILogger<EventBusServiceBus>>();
-                var eventBusSubscriptionsManager = sp.GetRequiredService<IEventBusSubscriptionsManager>();
-                string subscriptionName = Configuration["SubscriptionClientName"];
+        // if (Configuration.GetValue<bool>("AzureServiceBusEnabled"))
+        // {
+        //     services.AddSingleton<IEventBus, EventBusServiceBus>(sp =>
+        //     {
+        //         var serviceBusPersisterConnection = sp.GetRequiredService<IServiceBusPersisterConnection>();
+        //         var iLifetimeScope = sp.GetRequiredService<ILifetimeScope>();
+        //         var logger = sp.GetRequiredService<ILogger<EventBusServiceBus>>();
+        //         var eventBusSubscriptionsManager = sp.GetRequiredService<IEventBusSubscriptionsManager>();
+        //         string subscriptionName = Configuration["SubscriptionClientName"];
 
-                return new EventBusServiceBus(serviceBusPersisterConnection, logger,
-                    eventBusSubscriptionsManager, iLifetimeScope, subscriptionName);
-            });
-        }
-        else
-        {
-            services.AddSingleton<IEventBus, EventBusRabbitMQ>(sp =>
-            {
-                var subscriptionClientName = Configuration["SubscriptionClientName"];
-                var rabbitMQPersistentConnection = sp.GetRequiredService<IRabbitMQPersistentConnection>();
-                var iLifetimeScope = sp.GetRequiredService<ILifetimeScope>();
-                var logger = sp.GetRequiredService<ILogger<EventBusRabbitMQ>>();
-                var eventBusSubscriptionsManager = sp.GetRequiredService<IEventBusSubscriptionsManager>();
+        //         return new EventBusServiceBus(serviceBusPersisterConnection, logger,
+        //             eventBusSubscriptionsManager, iLifetimeScope, subscriptionName);
+        //     });
+        // }
+        // else
+        // {
+        //     services.AddSingleton<IEventBus, EventBusRabbitMQ>(sp =>
+        //     {
+        //         var subscriptionClientName = Configuration["SubscriptionClientName"];
+        //         var rabbitMQPersistentConnection = sp.GetRequiredService<IRabbitMQPersistentConnection>();
+        //         var iLifetimeScope = sp.GetRequiredService<ILifetimeScope>();
+        //         var logger = sp.GetRequiredService<ILogger<EventBusRabbitMQ>>();
+        //         var eventBusSubscriptionsManager = sp.GetRequiredService<IEventBusSubscriptionsManager>();
 
-                var retryCount = 5;
-                if (!string.IsNullOrEmpty(Configuration["EventBusRetryCount"]))
-                {
-                    retryCount = int.Parse(Configuration["EventBusRetryCount"]);
-                }
+        //         var retryCount = 5;
+        //         if (!string.IsNullOrEmpty(Configuration["EventBusRetryCount"]))
+        //         {
+        //             retryCount = int.Parse(Configuration["EventBusRetryCount"]);
+        //         }
 
-                return new EventBusRabbitMQ(rabbitMQPersistentConnection, logger, iLifetimeScope, eventBusSubscriptionsManager, subscriptionClientName, retryCount);
-            });
-        }
+        //         return new EventBusRabbitMQ(rabbitMQPersistentConnection, logger, iLifetimeScope, eventBusSubscriptionsManager, subscriptionClientName, retryCount);
+        //     });
+        // }
 
-        services.AddSingleton<IEventBusSubscriptionsManager, InMemoryEventBusSubscriptionsManager>();
+        // services.AddSingleton<IEventBusSubscriptionsManager, InMemoryEventBusSubscriptionsManager>();
 
-        services.AddTransient<ProductPriceChangedIntegrationEventHandler>();
-        services.AddTransient<OrderStartedIntegrationEventHandler>();
+        // services.AddTransient<ProductPriceChangedIntegrationEventHandler>();
+        // services.AddTransient<OrderStartedIntegrationEventHandler>();
     }
 
-    private void ConfigureEventBus(IApplicationBuilder app)
-    {
-        var eventBus = app.ApplicationServices.GetRequiredService<IEventBus>();
+    // private void ConfigureEventBus(IApplicationBuilder app)
+    // {
+    //     var eventBus = app.ApplicationServices.GetRequiredService<IEventBus>();
 
-        eventBus.Subscribe<ProductPriceChangedIntegrationEvent, ProductPriceChangedIntegrationEventHandler>();
-        eventBus.Subscribe<OrderStartedIntegrationEvent, OrderStartedIntegrationEventHandler>();
-    }
+    //     eventBus.Subscribe<ProductPriceChangedIntegrationEvent, ProductPriceChangedIntegrationEventHandler>();
+    //     eventBus.Subscribe<OrderStartedIntegrationEvent, OrderStartedIntegrationEventHandler>();
+    // }
 }

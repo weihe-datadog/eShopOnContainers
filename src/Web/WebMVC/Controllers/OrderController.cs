@@ -37,7 +37,7 @@ class Item {
     public string ProductId { get; set; }
     [JsonProperty("name")]
     public string ProductName { get; set; }
-    [JsonProperty("price")]
+    [JsonProperty("unit_price")]
     public float UnitPrice { get; set; }
     [JsonProperty("units")]
     public int Units { get; set; }
@@ -60,12 +60,66 @@ public class OrderController : Controller
     public async Task<IActionResult> Create()
     {
 
-        var user = _appUserParser.Parse(HttpContext.User);
-        var order = await _basketSvc.GetOrderDraft(user.Id);
-        var vm = _orderSvc.MapUserInfoIntoOrder(user, order);
-        vm.CardExpirationShortFormat();
+        // var user = _appUserParser.Parse(HttpContext.User);
+        // var order = await _basketSvc.GetOrderDraft(user.Id);
+        // var vm = _orderSvc.MapUserInfoIntoOrder(user, order);
+        // var jsonString = JsonConvert.SerializeObject(
+        //    vm, Formatting.Indented);
+        var jsonString = @"{
+   ""OrderNumber"": null,
+   ""Date"": ""0001-01-01T00:00:00"",
+   ""Status"": null,
+   ""Total"": 40.0,
+   ""Description"": null,
+   ""City"": ""Redmond"",
+   ""Street"": ""15703 NE 61st Ct"",
+   ""State"": ""WA"",
+   ""Country"": ""U.S."",
+   ""ZipCode"": ""98052"",
+   ""CardNumber"": ""4012888888881881"",
+   ""CardHolderName"": ""Alice Smith"",
+   ""CardExpiration"": ""2024-12-01T00:00:00"",
+   ""CardExpirationShort"": null,
+   ""CardSecurityNumber"": ""123"",
+   ""CardTypeId"": 0,
+   ""Buyer"": ""0132ee44-345d-4abd-badc-658d2a5d0597"",
+   ""ActionCodeSelectList"": [],
+   ""OrderItems"": [
+     {
+       ""ProductId"": 6,
+       ""ProductName"": "".NET Blue Hoodie"",
+       ""UnitPrice"": 12.0,
+       ""Discount"": 0.0,
+       ""Units"": 1,
+       ""PictureUrl"": ""https://images.footballfanatics.com/brooklyn-nets/brooklyn-nets-nike-city-edition-courtside-fleece-hoodie-royal-blue-mens_ss4_p-13315744+u-p3q3oj093zgie7h07j1h+v-3b5d7df7f82d44deb9ed2ed88f4c708c.jpg?_hv=2&w=900""
+     },
+     {
+       ""ProductId"": 1,
+       ""ProductName"": "".NET Bot Black Hoodie"",
+       ""UnitPrice"": 19.5,
+       ""Discount"": 0.0,
+       ""Units"": 1,
+       ""PictureUrl"": ""https://images.footballfanatics.com/brooklyn-nets/mens-fanatics-branded-black-brooklyn-nets-wordmark-pullover-hoodie_pi2885000_altimages_ff_2885069alt1_full.jpg?_hv=2&w=900""
+     },
+     {
+       ""ProductId"": 2,
+       ""ProductName"": "".NET Black & White Mug"",
+       ""UnitPrice"": 8.5,
+       ""Discount"": 0.0,
+       ""Units"": 1,
+       ""PictureUrl"": ""https://assets.weimgs.com/weimgs/rk/images/wcm/products/202403/0004/img53o.jpg""
+     }
+   ],
+   ""RequestId"": ""00000000-0000-0000-0000-000000000000""
+ }";
 
-        return View(vm);
+        Console.WriteLine("View: Create");
+        Console.WriteLine(jsonString);
+
+        var deserialized = JsonConvert.DeserializeObject<Order>(jsonString);
+        deserialized.CardExpirationShortFormat();
+
+        return View(deserialized);
     }
 
     [HttpPost]
