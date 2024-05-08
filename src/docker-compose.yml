@@ -14,7 +14,7 @@ x-common-env: &common-env
     DD_LOGS_INJECTION: "true"
     DD_TRACE_SPAN_ORIGIN_ENABLED: "true"
     DD_TRACE_SPAN_ORIGIN_ENRICHED: "true"
-    DD_GIT_COMMIT_SHA: "1a1e5f21a43e6970929dd9fe09f4189f49a61ac4"
+    DD_GIT_COMMIT_SHA: "1c659f882884461d8a64e2d2e870b6ddddc15647"
     DD_GIT_REPOSITORY_URL: "https://github.com/weihe-datadog/eShopOnContainers.git"
     COUPON_DATABASE_URL: postgresql://coupon_manager:admin@coupondb:5432/coupon_management
 
