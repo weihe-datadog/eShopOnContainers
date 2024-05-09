@@ -14,13 +14,14 @@ x-common-env: &common-env
     DD_LOGS_INJECTION: "true"
     DD_TRACE_SPAN_ORIGIN_ENABLED: "true"
     DD_TRACE_SPAN_ORIGIN_ENRICHED: "true"
-    DD_GIT_COMMIT_SHA: "e87ddc7c860feb347be331888286de4a88b9b82d"
+    DD_GIT_COMMIT_SHA: "1c659f882884461d8a64e2d2e870b6ddddc15647"
     DD_GIT_REPOSITORY_URL: "https://github.com/weihe-datadog/eShopOnContainers.git"
     COUPON_DATABASE_URL: postgresql://coupon_manager:admin@coupondb:5432/coupon_management
 
 x-common-build-args: &common-build-args
   args:
-    DD_TRACER: "https://artprodcus3.artifacts.visualstudio.com/A124c910c-3307-4c7f-b5dc-36cb208d4211/a51c4863-3eb4-4c5d-878a-58b41a049e4e/_apis/artifact/cGlwZWxpbmVhcnRpZmFjdDovL2RhdGFkb2docS9wcm9qZWN0SWQvYTUxYzQ4NjMtM2ViNC00YzVkLTg3OGEtNThiNDFhMDQ5ZTRlL2J1aWxkSWQvMTU2MDgxL2FydGlmYWN0TmFtZS8yLjQ5LjAtcmVsZWFzZS1hcnRpZmFjdHM1/content?format=file&subPath=%2Fdatadog-dotnet-apm-2.49.0.arm64.tar.gz"
+    DD_TRACER_SPAN_ORIGIN: "https://artprodcus3.artifacts.visualstudio.com/A124c910c-3307-4c7f-b5dc-36cb208d4211/a51c4863-3eb4-4c5d-878a-58b41a049e4e/_apis/artifact/cGlwZWxpbmVhcnRpZmFjdDovL2RhdGFkb2docS9wcm9qZWN0SWQvYTUxYzQ4NjMtM2ViNC00YzVkLTg3OGEtNThiNDFhMDQ5ZTRlL2J1aWxkSWQvMTU2MDgxL2FydGlmYWN0TmFtZS8yLjQ5LjAtcmVsZWFzZS1hcnRpZmFjdHM1/content?format=file&subPath=%2Fdatadog-dotnet-apm-2.49.0.arm64.tar.gz"
+    DD_TRACER: https://github.com/DataDog/dd-trace-dotnet/releases/download/v2.51.0/datadog-dotnet-apm-2.51.0.arm64.tar.gz
     DD_TRACER_PY: "git+https://github.com/P403n1x87/dd-trace-py.git@chore/span-origin"
 services:
 

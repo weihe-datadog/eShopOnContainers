@@ -147,9 +147,39 @@ public class OrderController : Controller
         return View("Create", model);
     }
 
+    private void dosomethingcrazy(int a, int b) {
+        if (b * b < 10) {
+            b = 0;
+        }
+        var c= a / b;
+        Console.WriteLine(c);
+    }
+
+    private void dosomething(List<int> numbers) {
+        foreach (var number in numbers)
+        {
+            if (number == 3)
+            {
+                numbers.Add(6);  // Modify the list while iterating
+            }
+            if (number == 4)
+            {
+                numbers.Remove(4);  // Modify the list while iterating
+            }
+            if (number == 5)
+            {
+                numbers.Add(7);  // Modify the list while iterating
+            }
+        }
+        Console.WriteLine(numbers.Count);
+    }
+
     [HttpPost]
     public async Task<IActionResult> ApplyCouponAsync(string couponCode, string orderModelJson)
-    {
+    {  
+        dosomethingcrazy(5, 2);
+        dosomething(new List<int>() { 1, 2, 3, 4, 5 });
+
         if (string.IsNullOrWhiteSpace(orderModelJson))
         {
             return BadRequest("Invalid order model data.");
@@ -178,6 +208,7 @@ public class OrderController : Controller
 
         try
         {
+
             using var response = await _httpClient.PostAsync("http://coupon-django-api:8000/coupons/apply", content);
             if (response.IsSuccessStatusCode)
             {
@@ -203,9 +234,11 @@ public class OrderController : Controller
                 return StatusCode((int)response.StatusCode, await response.Content.ReadAsStringAsync());
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return StatusCode(500, "Internal server error");
+            Console.WriteLine("Got an exception", ex);
+            // return StatusCode(500, "Internal server error");
+            throw new Exception("Internal server error", ex);
         }
     }
 
